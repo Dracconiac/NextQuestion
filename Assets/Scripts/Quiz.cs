@@ -15,7 +15,6 @@ public class Quiz : MonoBehaviour
     void Start()
     {
         DisplayQuestion();
-        SetButtonState(true); // Enables buttons at the start and resets their sprites
     }
 
     public void OnAnswerSelected(int index)
@@ -23,7 +22,6 @@ public class Quiz : MonoBehaviour
         Image buttonImage;
 
         SetButtonState(false); // Disables all buttons after an answer is selected
-
         if (index == question.GetCorrectAnswerIndex())
         {
             questionText.text = "Correct!";
@@ -40,10 +38,17 @@ public class Quiz : MonoBehaviour
 
     }
 
+    void GetNextQuestion()
+    {
+        SetButtonState(true); // Enables buttons at the start and resets their sprites
+        SetButtonSprites();
+        DisplayQuestion();
+    }
+
     void DisplayQuestion()
     {
         questionText.text = question.GetQuestion();
-
+        
         for (int i = 0; i < answerButtons.Length; i++)
         {
             TextMeshProUGUI buttonText = answerButtons[i].GetComponentInChildren<TextMeshProUGUI>();
@@ -57,6 +62,13 @@ public class Quiz : MonoBehaviour
         {
             Button button = answerButtons[i].GetComponent<Button>();
             button.interactable = state;
+        }
+    }
+
+    void SetButtonSprites()
+    {
+        for (int i = 0; i < answerButtons.Length; i++)
+        {
             Image buttonImage = answerButtons[i].GetComponent<Image>();
             buttonImage.sprite = defaultAnswerSprite; // Reset to default sprite
         }
