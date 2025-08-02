@@ -14,7 +14,7 @@ public class Quiz : MonoBehaviour
     [Header("Answers")]
     [SerializeField] GameObject[] answerButtons;
     int correctAnswerIndex;
-    bool hasAnsweredEarly;
+    bool hasAnsweredEarly = true;
 
     [Header("Button Collors")]
     [SerializeField] Sprite defaultAnswerSprite;
@@ -24,10 +24,21 @@ public class Quiz : MonoBehaviour
     [SerializeField] Image timerImage;
     Timer timer;
 
-    void Start()
+    [Header("Scoring")]
+    [SerializeField] TextMeshProUGUI scoreText;
+    ScoreKeeper scoreKeeper;
+
+    [Header("Progreess Bar")]
+    [SerializeField] Slider progressBar;
+
+    public bool isComplete;
+
+    void Awake()
     {
         timer = FindObjectOfType<Timer>();
-        DisplayQuestion();
+        scoreKeeper = FindObjectOfType<ScoreKeeper>();
+        progressBar.maxValue = questions.Count;
+        progressBar.value = 0;
     }
 
     void Update()
@@ -35,6 +46,11 @@ public class Quiz : MonoBehaviour
         timerImage.fillAmount = timer.fillFraction;
         if (timer.loadNextQuestion)
         {
+            if (progressBar.value == progressBar.maxValue)
+            {
+                isComplete = true;
+                return;
+            }
             hasAnsweredEarly = false;
             GetNextQuestion();
             timer.loadNextQuestion = false; // Reset the flag after loading the next question
@@ -52,6 +68,7 @@ public class Quiz : MonoBehaviour
         DisplayCorrectAnswer(index);
         SetButtonState(false); // Disables all buttons after an answer is selected
         timer.CancelTimer(); // Stops the timer when an answer is selected
+        scoreText.text = "Score: " + scoreKeeper.CalculateScore() + "%";
     }
 
     void GetNextQuestion()
@@ -114,6 +131,8 @@ public class Quiz : MonoBehaviour
             questionText.text = "Correct!";
             buttonImage = answerButtons[index].GetComponent<Image>();
             buttonImage.sprite = correctAnswerSprite;
+            scoreKeeper.IncrementCorrectAnswers();
+            scoreKeeper.IncrementQuestionsAnswered();
         }
         else
         {
@@ -121,6 +140,8 @@ public class Quiz : MonoBehaviour
             questionText.text = "Wrong, the correct answer is:\n" + currentQuestion.GetAnswer(correctAnswerIndex);
             buttonImage = answerButtons[correctAnswerIndex].GetComponent<Image>();
             buttonImage.sprite = correctAnswerSprite;
+            scoreKeeper.IncrementQuestionsAnswered();
         }
+        progressBar.value++;
     }  
 }
